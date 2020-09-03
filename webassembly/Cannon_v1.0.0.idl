@@ -1,0 +1,1028 @@
+[NoDelete]
+interface Ref {
+  // void Ref();
+
+  // void retain();
+
+  void release();
+
+  //[Const] long getReferenceCount();
+};
+
+interface Vec3 {
+  void Vec3();
+  void Vec3(float x, float y, float z);
+  //void Vec3([Const, Ref] Vec3 v);
+
+  [Operator="=", Ref] Vec3 op_assign([Const, Ref] Vec3 v);
+
+  /*
+  [Operator="+=", Ref] Vec3 op_add([Const, Ref] Vec3 v);
+  [Operator="-=", Ref] Vec3 op_sub([Const, Ref] Vec3 v);
+  [Operator="*=", Ref] Vec3 op_mul(float scalar);
+  [Operator="/=", Ref] Vec3 op_div(float scalar);
+  [Ref] Vec3 vadd([Const, Ref] Vec3 v, [Ref] Vec3 target);
+  */
+  
+  [Ref] Vec3 vsub([Const, Ref] Vec3 v, [Ref] Vec3 target);
+
+  [Ref] Vec3 cross([Const, Ref] Vec3 v, [Ref] Vec3 target);
+  void setZero();
+  Mat3 crossmat();
+  float normalize();
+  [Ref] Vec3 unit([Ref] Vec3 target);
+  float norm();
+  float length();
+  float norm2();
+  float lengthSquared();
+  float distanceTo([Const, Ref] Vec3 v);
+  float distanceSquared([Const, Ref] Vec3 v);
+  [Ref] Vec3 mult(float scalar, [Ref] Vec3 target);
+  [Ref] Vec3 scale(float scalar, [Ref] Vec3 target);
+  [Ref] Vec3 vmul([Const, Ref] Vec3 v, [Ref] Vec3 target);
+  [Ref] Vec3 addScaledVector(float scalar, [Ref] Vec3 v, [Ref] Vec3 target);
+  float dot([Const, Ref] Vec3 v);
+  boolean isZero();
+  [Ref] Vec3 negate([Ref] Vec3 target);
+  void tangents([Ref] Vec3 v1, [Ref] Vec3 v2);
+  [Ref] Vec3 copy([Const, Ref] Vec3 v);
+  [Ref] Vec3 lerp([Const, Ref] Vec3 v, float t, [Ref] Vec3 target);
+  boolean almostEquals([Const, Ref] Vec3 v, float precision);
+  boolean almostZero(float precision);
+  boolean isAntiparallelTo([Const, Ref] Vec3 v, float precision);
+
+  [Ref] Vec3 set(float x, float y, float z);
+  //[Ref] Vec3 clone();
+
+  attribute float x;
+  attribute float y;
+  attribute float z;
+};
+
+enum EulerOrder {
+  "XYZ",
+  "YZX",
+  "ZXY",
+  "ZYX",
+  "YXZ",
+  "XZY"
+};
+
+interface Quaternion {
+  void Quaternion();
+  void Quaternion(float x, float y, float z, float w);
+  //void Quaternion([Const, Ref] Quaternion q);
+
+  [Operator="=", Ref] Quaternion op_assign([Const, Ref] Quaternion q);
+  [Ref] Quaternion setFromAxisAngle([Const, Ref] Vec3 axis, float angle);
+  // void toAxisAngle([Ref] Vec3 targetAxis, float angle);
+  [Ref] Quaternion setFromVectors([Const, Ref] Vec3 u, [Const, Ref] Vec3 v);
+  [Ref] Quaternion mult([Const, Ref] Quaternion q, [Ref] Quaternion target);
+  [Ref] Quaternion add([Const, Ref] Quaternion q, [Ref] Quaternion target);
+  [Ref] Quaternion sub([Const, Ref] Quaternion q, [Ref] Quaternion target);
+  [Ref] Quaternion scale(float s, [Ref] Quaternion target);
+  [Ref] Quaternion inverse([Ref] Quaternion target);
+  [Ref] Quaternion conjugate([Ref] Quaternion target);
+  [Ref] Quaternion normalize();
+  Quaternion normalizeFast();
+  [Ref] Vec3 vmult([Const, Ref] Vec3 v, [Ref] Vec3 target);
+  [Ref] Quaternion copy([Const, Ref] Quaternion q);
+  void toEuler([Ref] Vec3 target, EulerOrder order);
+  [Ref] Quaternion setFromEuler(float x, float y, float z, EulerOrder order);
+  [Value] Quaternion clone();
+  [Const, Ref] Quaternion slerp([Const, Ref] Quaternion toQuat, float t, [Ref] Quaternion target);
+  [Ref] Quaternion integrate([Const, Ref] Vec3 angularVelocity, float dt, [Const, Ref] Vec3 angularFactor, [Ref] Quaternion target);
+  
+  [Ref] Quaternion set(float x, float y, float z, float w);
+
+  attribute float x;
+  attribute float y;
+  attribute float z;
+  attribute float w;
+};
+
+interface Mat3 {
+  void Mat3();
+  void Mat3(float m00, float m01, float m02, float m10, float m11, float m12, float m20, float m21, float m22);
+  void identity();
+  void setZero();
+  //void smult(float scalar);
+};
+
+interface Transform {
+  void Transform([Const, Ref] optional Vec3 position, [Const, Ref] optional Quaternion quaternion);
+
+  [Value] attribute Vec3 position;
+  [Value] attribute Quaternion quaternion;
+};
+
+/*
+interface JacobianElement {
+  void JacobianElement();
+
+  [Value] attribute Vec3 spatial;
+  [Value] attribute Vec3 rotational;
+};
+*/
+
+[Prefix="Material::"]
+interface MaterialOptions {
+  void MaterialOptions();
+  void MaterialOptions(long id, [Const] DOMString name, optional float friction, optional float restitution);
+  
+  attribute long id;
+  attribute float friction;
+  attribute float restitution;
+  [Const] attribute DOMString name;
+};
+
+[NoDelete]
+interface Material {
+  
+  void Material([Const, Ref] MaterialOptions options);
+
+  long id();
+  /*
+  float friction();
+  float restitution();
+  */
+  float get_friction();
+  float get_restitution();
+  void set_friction(float friction);
+  void set_restitution(float restitution);
+};
+Material implements Ref;
+
+[Prefix="ContactMaterial::"]
+interface ContactMaterialOptions {
+  void ContactMaterialOptions(optional float friction, optional float restitution, optional float contactEquationStiffness, optional float contactEquationRelaxation,
+    optional float frictionEquationStiffness, optional float frictionEquationRelaxation);
+
+  attribute float friction;
+  attribute float restitution;
+  attribute float contactEquationStiffness;
+  attribute float contactEquationRelaxation;
+  attribute float frictionEquationStiffness;
+  attribute float frictionEquationRelaxation;
+};
+
+[NoDelete]
+interface ContactMaterial {
+  void ContactMaterial(Material m1, Material m2, long id);
+
+  void ContactMaterial(Material m1, Material m2, long id, [Const, Ref] ContactMaterialOptions options); 
+
+  Material m1();
+  Material m2();
+  /*
+  float friction();
+  float restitution();
+  float contactEquationStiffness();
+  float contactEquationRelaxation();
+  float frictionEquationStiffness();
+  float frictionEquationRelaxation();
+   */
+  float get_friction();
+  float get_restitution();
+  float get_contactEquationStiffness();
+  float get_contactEquationRelaxation();
+  float get_frictionEquationStiffness();
+  float get_frictionEquationRelaxation();
+
+  void set_friction(float val);
+  void set_restitution(float val);
+  void set_contactEquationStiffness(float val);
+  void set_contactEquationRelaxation(float val);
+  void set_frictionEquationStiffness(float val);
+  void set_frictionEquationRelaxation(float val);
+};
+ContactMaterial implements Ref;
+
+interface AABB {
+  void AABB([Const, Ref] optional Vec3 lowerBound, [Const, Ref] optional Vec3 upperBound);  
+
+  [Ref] Vec3 get_lowerBound();
+  [Ref] Vec3 get_upperBound();
+};
+
+interface Octree {
+  // void Octree([Const, Ref] AABB aabb, optional long maxDepth);
+  void Octree(optional long maxDepth);   
+};
+
+enum RayIntersectionMode {
+  "RayIntersectionMode::CLOSEST",
+  "RayIntersectionMode::ANY",
+  "RayIntersectionMode::ALL",
+};
+
+interface RayCallback {
+  
+};
+
+[JSImplementation="RayCallback"]
+interface JSRayCallback {
+  void JSRayCallback();
+  void reportRaycastResult(RaycastResult result);
+};
+
+[Prefix="Ray::"]
+interface RayOptions {
+  void RayOptions();
+  
+  void RayOptions(boolean skipBackfaces, optional RayIntersectionMode mode, optional RaycastResult result,
+          optional long collisionFilterMask, optional long collisionFilterGroup,
+      [Const, Ref] optional Vec3 from, [Const, Ref] optional Vec3 to, optional RayCallback callback);
+
+  [Value] attribute Vec3 from;
+  [Value] attribute Vec3 to;
+  attribute RaycastResult result;
+  // attribute RayCallback callback;
+  attribute RayIntersectionMode mode;
+
+  attribute boolean skipBackfaces;
+  attribute long collisionFilterMask;
+  attribute long collisionFilterGroup; 
+};
+
+interface Ray {
+  void Ray([Const, Ref] Vec3 from, [Const, Ref] Vec3 to);
+
+  [Const, Ref] Vec3 from();
+  void setFrom([Ref] Vec3 value);
+  
+  [Const, Ref] Vec3 to();
+  void setTo([Ref] Vec3 value);
+  [Const, Ref] Vec3 direction();
+
+  void updateDirection();
+
+  boolean skipBackfaces();
+  void setSkipBackfaces(boolean value);
+
+  boolean get_checkCollisionResponse();
+  void set_checkCollisionResponse(boolean value);
+
+  [Const, Ref] RaycastResult result();
+};
+
+interface RaycastResult {
+  void RaycastResult();
+
+  void reset();
+  void abort();
+
+  Shape get_shape();
+  Body get_body();
+
+  attribute Vec3 rayFromWorld;
+  attribute Vec3 rayToWorld;
+  attribute Vec3 hitNormalWorld;
+  attribute Vec3 hitPointWorld;
+  attribute boolean hasHit;
+  attribute long hitFaceIndex;
+  attribute float distance;
+  //attribute boolean _shouldStop;
+};
+
+enum BodyType {
+  "BodyType::DYNAMIC",
+  "BodyType::STATIC",
+  "BodyType::KINEMATIC"
+};
+
+enum BodyState {
+  "BodyState::AWAKE",
+  "BodyState::SLEEPY",
+  "BodyState::SLEEPING"
+};
+
+[Prefix="Body::"]
+interface BodyOptions {  
+  void BodyOptions(World world, optional long id, optional Shape shape, optional float mass, optional Material material, optional BodyType type, optional boolean fixedRotation,
+    optional boolean allowSleep, optional long collisionFilterGroup, optional long collisionFilterMask,
+    optional float sleepSpeedLimit, optional float sleepTimeLimit, optional float linearDamping, optional float angularDamping, 
+    [Const, Ref] optional Vec3 pos, [Const, Ref] optional Vec3 velocity, [Const, Ref] optional Vec3 angularVelocity, 
+    [Const, Ref] optional Vec3 linearFactor, [Const, Ref] optional Vec3 angularFactor, [Const, Ref] optional Quaternion quaternion);
+
+  [Value] attribute Vec3 position;
+  [Value] attribute Quaternion quaternion;
+
+  [Value] attribute Vec3 velocity;
+  [Value] attribute Vec3 angularVelocity;
+  [Value] attribute Vec3 linearFactor;
+  [Value] attribute Vec3 angularFactor;
+
+  attribute long id;
+  attribute Shape shape;
+  attribute float mass;
+
+  attribute Material material;
+  attribute BodyType type;
+  attribute boolean fixedRotation;
+  attribute boolean allowSleep;
+  attribute long collisionFilterGroup;
+  attribute long collisionFilterMask;
+
+  attribute float sleepSpeedLimit;
+  attribute float sleepTimeLimit;
+  attribute float linearDamping;
+  attribute float angularDamping;
+};
+
+[NoDelete]
+interface Body {
+  
+  void Body([Const, Ref] BodyOptions options);
+  //static Body create([Const, Ref] BodyOptions options);
+
+  void wakeUp();
+  void sleep();
+  void addShape(Shape shape, [Const,Ref] optional Vec3 offset, [Const,Ref] optional Quaternion orientation);
+  void removeShape(Shape shape);
+  void updateBoundingRadius();
+  void computeAABB();
+  void updateInertiaWorld(boolean force);
+  void applyForce([Const, Ref] Vec3 force, [Const, Ref] Vec3 relativePoint);
+  void applyLocalForce([Const, Ref] Vec3 localForce, [Const, Ref] Vec3 localPoint);
+  void applyImpulse([Const, Ref] Vec3 impulse, [Const, Ref] Vec3 relativePoint);
+  void applyLocalImpulse([Const, Ref] Vec3 localImpulse, [Const, Ref] Vec3 localPoint);
+  void updateMassProperties();
+  //[Value] Vec3 getVelocityAtWorldPoint([Const, Ref] Vec3 worldPoint);
+  [Ref] Vec3 getVelocityAtWorldPoint([Const, Ref] Vec3 worldPoint, [Ref] Vec3 result);
+
+  [Ref] Vec3 vectorToWorldFrame([Const, Ref] Vec3 localVector, [Ref] Vec3 result);
+
+  boolean isSleeping();
+  boolean isSleepy();
+  boolean isAwake();
+
+  long get_id();
+  [Const] World world();
+  void setWorld(World world);
+
+  void updateHasTrigger();
+
+  Material get_material();
+  void set_material(Material value);
+
+  float get_mass();
+  void set_mass(float value);
+
+  long get_type();
+  void set_type(long value);
+
+  boolean get_allowSleep();
+  void set_allowSleep(boolean value);
+
+  long shapesLength();  // replace shapes().length;
+  Shape getShape(long index);
+  Vec3 getShapeOffset(long index);
+  Quaternion getShapeOrientation(long index);
+
+  [Ref] Vec3 get_position();
+  void set_position([Ref] Vec3 value);
+
+  [Ref] Quaternion get_quaternion();
+  void set_quaternion([Ref] Quaternion value);
+
+  [Ref] Vec3 get_velocity();
+  void set_velocity([Ref] Vec3 value);
+
+  [Ref] Vec3 get_torque();
+  void set_torque([Ref] Vec3 value);
+
+  [Ref] Vec3 get_force();
+  void set_force([Ref] Vec3 value);
+
+  [Ref] Vec3 get_angularVelocity();
+  void set_angularVelocity([Ref] Vec3 value);
+
+  [Ref] Vec3 get_angularFactor();
+  void set_angularFactor([Ref] Vec3 value);
+
+  [Ref] Vec3 get_linearFactor();
+  void set_linearFactor([Ref] Vec3 value);
+
+  boolean get_fixedRotation();
+  void set_fixedRotation(boolean val);
+
+  boolean get_useGravity();
+  void set_useGravity(boolean value);
+
+  float get_linearDamping();
+  void set_linearDamping(float value);
+
+  boolean get_collisionResponse();
+  void set_collisionResponse(boolean val);
+
+  long get_collisionFilterGroup();
+  void set_collisionFilterGroup(long value);
+  
+  long get_collisionFilterMask();
+  void set_collisionFilterMask(long value);
+
+  [Ref] AABB get_aabb();
+  boolean get_aabbNeedsUpdate();
+  void set_aabbNeedsUpdate(boolean v);
+
+};
+Body implements Ref;
+
+enum ShapeType {
+  "ShapeType::NONE",
+  "ShapeType::SPHERE",
+  "ShapeType::PLANE",
+  "ShapeType::BOX",
+  "ShapeType::COMPOUND",
+  "ShapeType::CONVEXPOLYHEDRON",
+  "ShapeType::HEIGHTFIELD",
+  "ShapeType::PARTICLE",
+  "ShapeType::CYLINDER",
+  "ShapeType::TRIMESH"
+};
+
+[Prefix="Shape::"]
+interface ShapeOptions {
+  void ShapeOptions();
+
+  void ShapeOptions(long id, ShapeType type, boolean collisionResponse, long collisionFilterGroup,
+    long collisionFilterMask, Material material);
+
+    /*
+  attribute Material material;
+  attribute long id;
+  attribute ShapeType type;
+  attribute boolean collisionResponse;
+  attribute long collisionFilterGroup;
+  attribute long collisionFilterMask;
+    */
+};
+
+[NoDelete]
+interface Shape {
+  //void Shape([Const, Ref] ShapeOptions options);
+  //void Shape();
+
+  void updateBoundingSphereRadius();
+  float volume();
+
+  long get_id();
+  ShapeType type();
+  float get_boundingSphereRadius();
+
+  //boolean collisionResponse();
+  //void setCollisionResponse(boolean val);
+
+  boolean get_collisionResponse();
+  void set_collisionResponse(boolean val);
+  /*
+  long collisionFilterGroup();
+  long collisionFilterMask();
+  */
+
+  long get_collisionFilterGroup();
+  void set_collisionFilterGroup(long value);
+  
+  long get_collisionFilterMask();
+  void set_collisionFilterMask(long value);
+
+  Body get_body();
+  void set_body(Body body);
+
+  Material get_material();
+  void set_material(Material value);
+};
+Shape implements Ref;
+
+[NoDelete]
+interface Box {
+  void Box(long id, World world, [Const, Ref] Vec3 halfExtents);
+
+  void updateConvexPolyhedronRepresentation();
+
+  [Ref] Vec3 get_halfExtents();
+  void set_halfExtents([Ref] Vec3 value);
+
+  ConvexPolyhedron get_convexPolyhedronRepresentation();
+
+};
+Box implements Shape;
+
+[NoDelete]
+interface Sphere {
+  void Sphere(long id, float radius);
+  //static Sphere create(long id, float radius);
+
+  float get_radius();
+  void set_radius(float value);
+  void updateBoundingSphereRadius();
+};
+Sphere implements Shape;
+
+[NoDelete]
+interface Plane {
+  void Plane(long id);
+
+  void computeWorldNormal([Const, Ref] Quaternion quat);
+
+  [Ref] Vec3 get_worldNormal();
+  void set_worldNormal([Ref] Vec3 val);
+
+  boolean get_worldNormalNeedsUpdate();
+  void set_worldNormalNeedsUpdate(boolean val);
+
+  float get_boundingSphereRadius();
+  void set_boundingSphereRadius(float val);
+};
+Plane implements Shape;
+
+[NoDelete]
+interface Particle {
+  void Particle(long id);
+};
+Particle implements Shape;
+
+[NoDelete] 
+interface ConvexPolyhedron {
+  void ConvexPolyhedron(long id);
+
+  void computeEdges();
+  void computeNormals();
+  void updateBoundingSphereRadius();
+  float volume();
+
+  void transformAllPoints([Const, Ref] Vec3 offset, [Const, Ref] Quaternion quat);
+
+  boolean get_worldVerticesNeedsUpdate();
+  void set_worldVerticesNeedsUpdate(boolean val);
+
+  boolean get_worldFaceNormalsNeedsUpdate();
+  void set_worldFaceNormalsNeedsUpdate(boolean val);
+
+  void set_vertices([Const] float[] vertices, long verticeCount);
+  void set_faces([Const] long[][] faces, long faceCount);
+  void set_uniqueAxes([Const] float[] vertices, long verticeCount);  
+
+  long getVerticeCount();
+  [Const, Ref] Vec3 getVertice(long index);
+
+  long getFaceCount();
+  long getFacePointCount(long faceIndex);
+  long getFacePoint(long faceIndex, long pointIndex);
+
+  long getUniqueAxesCount();
+  [Const, Ref] Vec3 getUniqueAxes(long index);
+};
+
+ConvexPolyhedron implements Shape;
+
+[NoDelete]
+interface Cylinder {
+  void Cylinder(long id, float radiusTop, float radiusBottom, float height, long numSegments);
+};
+Cylinder implements ConvexPolyhedron;
+
+[NoDelete] 
+interface Trimesh {
+  void Trimesh(long id, [Const] float[] vertices, long verticeCount, [Const] long[] indices, long indiceCount);
+  void Trimesh(long id, float radius, float tube, long radialSegments, long tubularSegments, float arc);
+
+  void setScale([Const, Ref] Vec3 scale);
+
+  void updateTree();
+  void updateAABB();
+  void updateEdges();
+  void updateNormals();
+
+  [Ref] AABB get_aabb();
+  void set_aabb([Ref] AABB val);
+
+  [Ref] Vec3 get_scale();
+  void set_scale([Ref] Vec3 val);
+
+  void getTriangleVertices(long i, [Ref] Vec3 a, [Ref] Vec3 b, [Ref] Vec3 c);
+
+  long getVerticeCount();
+  float getVertice(long index);
+
+  long getIndiceCount();
+  long getIndice(long index);
+};
+Trimesh implements Shape;
+
+[NoDelete]
+interface Heightfield {
+  void Heightfield(long id, World world, [Const] float[] dataPtr, long width, long height, optional float maxValue, optional float minValue, optional long elementSize, optional boolean needUpdateMax, optional boolean needUpdateMin);
+
+  boolean getConvexTrianglePillar(long xi, long yi, boolean getUpperTriangle);
+
+  ConvexPolyhedron get_pillarConvex();
+  [Const, Ref] Vec3 get_pillarOffset();
+
+  long get_elementSize();
+
+  long getFirstArraySize();
+  long getSecondArraySize(long index);
+};
+Heightfield implements Shape;
+
+[NoDelete]
+interface Equation {
+
+  Body get_bi();
+  Body get_bj();
+};
+Equation implements Ref;
+
+[NoDelete]
+interface ContactEquation {
+
+  Shape get_si();
+  Shape get_sj();
+  [Ref] Vec3 get_ni();
+  [Ref] Vec3 get_ri();
+  [Ref] Vec3 get_rj();
+};
+ContactEquation implements Equation;
+
+[NoDelete]
+interface Constraint {
+
+  void enable();
+  void disable();
+
+  long getEquationCount();
+  Equation getEquation(long index);
+};
+Constraint implements Ref;
+
+[NoDelete]
+interface DistanceConstraint {
+  void DistanceConstraint(long id, Body bodyA, Body bodyB, optional float distance, optional float maxForce, optional boolean collideConnected, optional boolean wakeUpBodies);
+};
+DistanceConstraint implements Constraint;
+
+[NoDelete]
+interface PointToPointConstraint {
+  void PointToPointConstraint(long id, Body bodyA, Body bodyB, [Ref] optional Vec3 pivotA, [Ref] optional Vec3 pivotB, optional float maxForce, optional boolean collideConnected, optional boolean wakeUpBodies);
+};
+PointToPointConstraint implements Constraint;
+
+
+[NoDelete]
+interface LockConstraint {
+  void LockConstraint(long id, Body bodyA, Body bodyB, optional float maxForce, [Const, Ref] optional Vec3 axisA, [Const, Ref] optional Vec3 axisB, optional boolean collideConnected, optional boolean wakeUpBodies);
+
+};
+LockConstraint implements PointToPointConstraint;
+
+[NoDelete]
+interface HingeConstraint {
+  void HingeConstraint(long id, Body bodyA, Body bodyB, [Ref] optional Vec3 pivotA, [Ref] optional Vec3 pivotB, [Const, Ref] optional Vec3 axisA, [Const, Ref] optional Vec3 axisB, optional float maxForce, optional boolean collideConnected, optional boolean wakeUpBodies);
+
+  void enableMotor();
+  void disableMotor();
+  void setMotorSpeed(float speed);
+  void setMotorMaxForce(float maxForce);
+};
+HingeConstraint implements PointToPointConstraint;
+
+[NoDelete]
+interface ConeTwistConstraint {
+  void ConeTwistConstraint(long id, Body bodyA, Body bodyB, [Ref] optional Vec3 pivotA, [Ref] optional Vec3 pivotB, [Const, Ref] optional Vec3 axisA, [Const, Ref] optional Vec3 axisB, optional float maxForce, optional float angle, optional boolean collideConnected, float twistAngle);
+};
+ConeTwistConstraint implements PointToPointConstraint;
+
+[Prefix="Spring::"]
+interface SpringOptions {
+  void SpringOptions();
+
+  void setWorldAnchorA([Const, Ref] Vec3 worldAnchorA);
+  void setWorldAnchorB([Const, Ref] Vec3 worldAnchorB);
+  void setLocalAnchorA([Const, Ref] Vec3 localAnchorA);
+  void setLocalAnchorB([Const, Ref] Vec3 localAnchorB);
+};
+
+[NoDelete]
+interface Spring {
+    void Spring(Body bodyA, Body bodyB, [Const, Ref] optional SpringOptions options);
+
+    void applyForce();
+};
+Spring implements Ref;
+
+[Prefix="WheelInfo::"]
+interface WheelOptions {
+    void WheelOptions();
+
+    [Value] attribute Vec3 chassisConnectionPointLocal; 
+    [Value] attribute Vec3 chassisConnectionPointWorld;
+    [Value] attribute Vec3 directionLocal;
+    [Value] attribute Vec3 directionWorld;
+    [Value] attribute Vec3 axleLocal;
+    [Value] attribute Vec3 axleWorld;
+    attribute float suspensionRestLength;
+    attribute float suspensionMaxLength;
+    attribute float radius;
+    attribute float suspensionStiffness;
+    attribute float dampingCompression;
+    attribute float dampingRelaxation;
+    attribute float frictionSlip;
+    attribute float steering;
+    attribute float rotation;
+    attribute float deltaRotation;
+    attribute float rollInfluence;
+    attribute float maxSuspensionForce;
+    attribute boolean isFrontWheel;
+    attribute float clippedInvContactDotSuspension;
+    attribute float suspensionRelativeVelocity;
+    attribute float suspensionForce;
+    attribute float skidInfo;
+    attribute float suspensionLength;
+    attribute float maxSuspensionTravel;
+    attribute boolean useCustomSlidingRotationalSpeed;
+    attribute float customSlidingRotationalSpeed;
+};
+
+[NoDelete]
+interface WheelInfo {
+
+    float get_radius();
+    [Ref] Transform get_worldTransform();
+};
+
+[NoDelete]
+interface RaycastVehicle {
+    void RaycastVehicle(Body chassisBody, long indexRightAxis, long indexLeftAxis, long indexUpAxis);
+
+    void addWheel([Const, Ref] WheelOptions options);
+
+    void setSteeringValue(float value, long wheelIndex);
+    void applyEngineForce(float value, long wheelIndex);
+    void setBrake(float brake, long wheelIndex);
+    void addToWorld(World world);
+    void removeFromWorld(World world);
+
+    void updateWheelTransform(long wheelIndex);
+
+    long getWheelCount();
+    WheelInfo getWheel(long index);
+};
+RaycastVehicle implements Ref;
+
+[NoDelete]
+interface RigidVehicle {
+  void RigidVehicle(World world, Body chassisBody, [Const, Ref] optional Vec3 coordinateSystem);
+
+  void setSteeringValue(float value, long wheelIndex);
+  void setMotorSpeed(float value, long wheelIndex);
+  void disableMotor(long wheelIndex);
+  void setWheelForce(float value, long wheelIndex);
+  void applyWheelForce(float value, long wheelIndex);
+  long addWheel(Body wheelBody, [Const, Ref] optional Vec3 position, [Const, Ref] optional Vec3 axis);
+
+  long getWheelBodyCount();
+  Body getWheelBody(long index);
+
+  void addToWorld(World world);
+  Body get_chassisBody();
+
+};
+RaycastVehicle implements Ref;
+
+[NoDelete]
+interface Broadphase {
+  //void Broadphase();   
+
+  boolean get_useBoundingBoxes();
+  void set_useBoundingBoxes(boolean value);
+};
+Broadphase implements Ref;
+
+[NoDelete]
+interface NaiveBroadphase {
+  void NaiveBroadphase();
+};
+NaiveBroadphase implements Broadphase;
+
+[NoDelete]
+interface GridBroadphase {
+  void GridBroadphase();
+};
+GridBroadphase implements Broadphase;
+
+[NoDelete]
+interface SAPBroadphase {
+  void SAPBroadphase(World world);
+};
+SAPBroadphase implements Broadphase;
+
+[NoDelete]
+interface Solver {
+  //void Solver();
+
+  long get_iterations();
+  void set_iterations(long value);
+
+  float get_tolerance();
+  void set_tolerance(float value);
+};
+
+[NoDelete]
+interface GSSolver {
+  void GSSolver();
+};
+GSSolver implements Solver;
+
+[NoDelete]
+interface SplitSolver {
+  void SplitSolver(Solver subsolver);
+};
+SplitSolver implements Solver;
+
+enum EventType {
+  //"EventType::NONE",
+  "EventType::WAKEUP",     
+  "EventType::SLEEPY",  
+  "EventType::SLEEP",
+  "EventType::ADDBODY",
+  "EventType::REMOVEBODY",
+  "EventType::COLLIDE",
+  "EventType::TRIGGERED",
+  //"EventType::SYNC",
+  "EventType::PRESTEP",
+  "EventType::POSTSTEP"
+};
+
+interface Event {
+  void Event();
+
+  readonly attribute EventType type;
+  [Const] readonly attribute DOMString event;
+  readonly attribute long targetID;  // body's id on collision; shape's id on triggered
+  // EventTarget* target = nullptr;
+
+  readonly attribute Shape selfShape;
+  readonly attribute Shape otherShape;
+  
+  readonly attribute Body selfBody;
+  readonly attribute Body otherBody;
+  
+  long contactCount();
+  ContactEquation getContact(long index);
+
+  // attribute std::vector<ContactEquation> contacts;  // contact points
+};
+
+interface EventCallback {
+  // void EventCallback();
+  // void notify([Ref] Event e);
+    
+  void setTarget(VoidPtr target);
+  VoidPtr target();
+  /*
+  void markAsRemoved();
+  boolean wasRemoved();
+  */
+};
+
+[JSImplementation="EventCallback"]
+interface JSEventCallback {
+  void JSEventCallback();
+
+  void notify([Ref] Event e);
+};
+
+[NoDelete]
+interface EventTarget {
+  void EventTarget();
+
+  void addEventListener(EventType type, EventCallback listener);
+  boolean hasEventListener(EventType type, EventCallback listener);
+  boolean hasAnyEventListener(EventType type);
+  void removeEventListener(EventType type, EventCallback listener);
+
+  void release();
+  void retain();
+};
+
+[NoDelete]
+interface ISystem {
+
+};
+
+[NoDelete]
+interface SPHSystem {
+
+  void SPHSystem();
+
+  void add(Body particle);
+
+  void remove(Body particle);
+
+  float get_density();
+  void set_density(float value);
+
+  float get_smoothingRadius();
+  void set_smoothingRadius(float value);
+
+  float get_speedOfSound();
+  void set_speedOfSound(float value);
+
+  float get_viscosity();
+  void set_viscosity(float value);
+
+  float get_eps();
+  void set_eps(float value);
+};
+SPHSystem implements ISystem;
+
+[Prefix="World::"]
+interface WorldOptions {
+  void WorldOptions();
+
+  [Value] attribute Vec3 gravity;
+  attribute Broadphase broadphase;
+  attribute Solver solver;
+  attribute boolean allowSleep;
+  attribute long quatNormalizeSkip;
+  attribute boolean quatNormalizeFast;
+};
+
+[NoDelete]
+interface World {
+  void World();
+
+  void World([Const, Ref] WorldOptions options);
+
+  long numObjects();
+  void collisionMatrixTick();
+  void addBody(Body body);
+  void removeBody(Body body);
+  //void remove(Body body);
+  Body getBody(long index);
+  void addConstraint(Constraint c);
+  void removeConstraint(Constraint c);
+  void addMaterial(Material m);
+  void addContactMaterial(ContactMaterial cmat);
+
+  boolean addSystem(ISystem sys);
+  boolean removeSystem(ISystem sys);
+
+  void step(float dt, optional float timeSinceLastCalled, optional long maxSubSteps);
+  void emitTriggeredEvents();
+  void emitCollisionEvents();
+  void clearForces();
+
+  boolean raycastClosest([Ref] Vec3 from, [Ref] Vec3 to, [Ref] RayOptions options, RaycastResult result);
+  boolean raycastAll([Ref] Vec3 from, [Ref] Vec3 to, optional RayCallback callback, optional RayOptions options);
+
+  boolean get_allowSleep();
+  void set_allowSleep(boolean val);
+
+  [Ref] Vec3 get_gravity();
+  void set_gravity([Ref] Vec3 val);
+
+  Broadphase get_broadphase();
+  void set_broadphase(Broadphase val);
+
+  Solver get_solver();
+  void set_solver(Solver val);
+
+  Material get_defaultMaterial();
+  void set_defaultMaterial(Material value);
+
+  ContactMaterial get_defaultContactMaterial();
+  void set_defaultContactMaterial(ContactMaterial value);
+
+  long get_quatNormalizeSkip();
+  void set_quatNormalizeSkip(long value);
+
+  boolean get_quatNormalizeFast();
+  void set_quatNormalizeFast(boolean value);
+
+  float get_time();
+
+  [Ref] EventTarget dispatcher();
+
+  long genBodyId();
+  long genShapeId();
+  long genConstraintId();
+  long genEquationId();
+  long genContactMaterialId();
+  long genMaterialId();
+
+  void release();
+  void retain();
+
+  void removeAllConstraints();
+  long getConstraintCount();
+  Constraint getConstraint(long index);
+
+  long getContactMaterialCount();
+  ContactMaterial getContactMaterial(long index);
+
+  long getContactCount();
+  ContactEquation getContact(long index);
+};
