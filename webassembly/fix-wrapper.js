@@ -248,7 +248,8 @@ var wrapCANNON = function(CANNON) {
     CANNON.Particle.__cache__ = CANNON._NativeParticle.__cache__;
 
     CANNON._NativeConvexPolyhedron = CANNON.ConvexPolyhedron;
-    CANNON.ConvexPolyHedron = function(points, faces, uniqueAxes) {
+
+    CANNON.ConvexPolyhedron = function(points, faces, uniqueAxes) {
         let shapeId = CANNON.__cur_world.genShapeId();
         let shape = new CANNON._NativeConvexPolyhedron(shapeId);
         // TODO: set points, faces, uniqueAxes by ArrayBuffer
